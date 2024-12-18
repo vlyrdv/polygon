@@ -307,5 +307,6 @@ int main() {
         cout << "Путь не найден с помощью A*" << endl;
     }
     count << end;
+    count << end;
     return 0;
 }
