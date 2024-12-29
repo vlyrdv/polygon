@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unordered_map>
-#include <vector>
+#include <vector>gi
 #include <queue>
 #include <stack>
 #include <cmath>
@@ -24,7 +24,7 @@ struct PairHash {
 };
 
 using Node = pair<double, double>; // Узел как пара координат
-using Edge = pair<Node, double>;  // Ребро как пара (узел, вес)
+using Edge = pair<Node, double>;   // Ребро как пара (узел, вес)
 using Graph = unordered_map<Node, vector<Edge>, PairHash>; // Граф как список смежности
 
 // Функция для вычисления евклидова расстояния между двумя узлами
@@ -229,6 +229,26 @@ bool aStar(const Graph& graph, const Node& start, const Node& goal, vector<Node>
     return false;
 }
 
+// Универсальная функция для тестирования
+template <typename Algorithm>
+void testAlgorithm(const Graph& graph, Algorithm algorithm, const string& name, const Node& start, const Node& goal) {
+    vector<Node> path;
+    auto start_time = chrono::high_resolution_clock::now();
+    if (algorithm(graph, start, goal, path)) {
+        auto end_time = chrono::high_resolution_clock::now();
+        cout << name << " Путь: ";
+        for (const auto& node : path) {
+            cout << "(" << node.first << ", " << node.second << ") ";
+        }
+        cout << endl;
+        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
+        cout << name << " Время: " << duration.count() << " мкс (" << duration.count() / 1000.0 << " мс)" << endl;
+    } else {
+        cout << name << ": Путь не найден" << endl;
+    }
+    cout << endl;
+}
+
 // Основная функция для тестирования
 int main() {
     Graph graph = loadGraphFromFile("spb_graph.txt");
@@ -241,72 +261,24 @@ int main() {
     Node start = {30.4141326, 59.9470649}; // Начальная точка
     Node goal = {30.4145466, 59.9470296};  // Конечная точка
 
-    vector<Node> path;
+    testAlgorithm(graph, [&](const Graph& g, const Node& s, const Node& e, vector<Node>& p) {
+        unordered_map<Node, bool, PairHash> visited;
+        return dfs(g, s, e, p, visited);
+    }, "DFS", start, goal);
 
-    // Измерение и запуск DFS
-    auto start_time = chrono::high_resolution_clock::now();
-    unordered_map<Node, bool, PairHash> visited;
-    if (dfs(graph, start, goal, path, visited)) {
-        auto end_time = chrono::high_resolution_clock::now();
-        cout << "DFS Путь: ";
-        for (const auto& node : path) {
-            cout << "(" << node.first << ", " << node.second << ") ";
-        }
-        cout << endl;
-        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
-        cout << "DFS Время: " << duration.count() << " мкс (" << duration.count() / 1000.0 << " мс)" << endl;
-    } else {
-        cout << "Путь не найден с помощью DFS" << endl;
-    }
-    cout << endl;
-    // Очистка пути и измерение BFS
-    path.clear();
-    start_time = chrono::high_resolution_clock::now();
-    if (bfs(graph, start, goal, path)) {
-        auto end_time = chrono::high_resolution_clock::now();
-        cout << "BFS Путь: ";
-        for (const auto& node : path) {
-            cout << "(" << node.first << ", " << node.second << ") ";
-        }
-        cout << endl;
-        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
-        cout << "BFS Время: " << duration.count() << " мкс (" << duration.count() / 1000.0 << " мс)" << endl;
-    } else {
-        cout << "Путь не найден с помощью BFS" << endl;
-    }
-    cout << endl;
-    // Очистка пути и измерение Dijkstra
-    path.clear();
-    start_time = chrono::high_resolution_clock::now();
-    if (dijkstra(graph, start, goal, path)) {
-        auto end_time = chrono::high_resolution_clock::now();
-        cout << "Dijkstra Путь: ";
-        for (const auto& node : path) {
-            cout << "(" << node.first << ", " << node.second << ") ";
-        }
-        cout << endl;
-        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
-        cout << "Dijkstra Время: " << duration.count() << " мкс (" << duration.count() / 1000.0 << " мс)" << endl;
-    } else {
-        cout << "Путь не найден с помощью Dijkstra" << endl;
-    }
-    cout << endl;
-    // Очистка пути и измерение A*
-    path.clear();
-    start_time = chrono::high_resolution_clock::now();
-    if (aStar(graph, start, goal, path)) {
-        auto end_time = chrono::high_resolution_clock::now();
-        cout << "A* Путь: ";
-        for (const auto& node : path) {
-            cout << "(" << node.first << ", " << node.second << ") ";
-        }
-        cout << endl;
-        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
-        cout << "A* Время: " << duration.count() << " мкс (" << duration.count() / 1000.0 << " мс)" << endl;
-    } else {
-        cout << "Путь не найден с помощью A*" << endl;
-    }
-    count << end;
-    count << end;
+    testAlgorithm(graph, [&](const Graph& g, const Node& s, const Node& e, vector<Node>& p) {
+        unordered_map<Node, bool, PairHash> visited;
+        return dfs(g, s, e, p, visited);
+    }, "DFS (обратный)", goal, start);
+
+    testAlgorithm(graph, bfs, "BFS", start, goal);
+    testAlgorithm(graph, bfs, "BFS (обратный)", goal, start);
+
+    testAlgorithm(graph, dijkstra, "Dijkstra", start, goal);
+    testAlgorithm(graph, dijkstra, "Dijkstra (обратный)", goal, start);
+
+    testAlgorithm(graph, aStar, "A*", start, goal);
+    testAlgorithm(graph, aStar, "A* (обратный)", goal, start);
+
     return 0;
 }
